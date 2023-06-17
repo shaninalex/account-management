@@ -1,3 +1,6 @@
+# Example of access rules.
+# More information in the documentation: https://www.ory.sh/docs/oathkeeper/
+
 - id: "test_hello_service"
   upstream:
     preserve_host: true

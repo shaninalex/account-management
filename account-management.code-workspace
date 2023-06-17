@@ -1,0 +1,17 @@
+{
+    "folders": [
+        {
+            "path": "account"
+        },
+        {
+            "path": "api"
+        },
+        {
+            "path": "config"
+        },
+        {
+            "path": "core"
+        }
+    ],
+    "settings": {}
+}

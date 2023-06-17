@@ -1,10 +1,18 @@
 version: "3.7"
 
-networks:
-  intranet:
-
-
 services:
+
+  account:
+    build: ./account
+    networks:
+      - intranet
+    ports:
+      - 4455:4455
+    environment:
+      - PORT=4455
+      - KRATOS_BROWSER_URL=http://127.0.0.1:4433/
+      - KRATOS_PUBLIC_URL=http://kratos:4433/
+
   postgres:
     image: postgres:latest
     environment:
@@ -23,6 +31,7 @@ services:
     networks:
       - intranet
 
+  # NOTE: Ory/Kratos services
   application-migrate:
     build: ./application-migrate
     environment:
@@ -31,6 +40,7 @@ services:
       DB_USER: user
       PGPASSWORD: password
       DB_NAME: application
+    restart: on-failure
     depends_on:
       postgres:
         condition: service_healthy
@@ -38,7 +48,7 @@ services:
       - intranet
 
   kratos-migrate:
-    image: oryd/kratos:v0.9.0-alpha.3
+    image: oryd/kratos:v0.13.0
     environment:
       - DSN=postgres://user:password@postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
     networks:
@@ -50,7 +60,7 @@ services:
     command: -c /etc/config/kratos/kratos.yml migrate sql -e --yes
 
   kratos:
-    image: oryd/kratos:v0.9.0-alpha.3
+    image: oryd/kratos:v0.13.0
     environment:
       - DSN=postgres://user:password@postgres:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
     ports:
@@ -64,17 +74,7 @@ services:
       - intranet
     command: serve -c /etc/config/kratos/kratos.yml --dev --watch-courier
 
-  kratos-selfservice-ui-node:
-    image: oryd/kratos-selfservice-ui-node:latest
-    environment:
-      - KRATOS_PUBLIC_URL=http://kratos:4433/
-      - KRATOS_BROWSER_URL=http://127.0.0.1:4433/
-    networks:
-      - intranet
-    ports:
-      - "4455:3000"
-    restart: on-failure
-
+  # Email service
   mailslurper:
     image: oryd/mailslurper:latest-smtps
     ports:
@@ -83,6 +83,7 @@ services:
     networks:
       - intranet
 
+  # API Getway
   oathkeeper:
     image: oryd/oathkeeper:v0.40
     depends_on:
@@ -98,3 +99,6 @@ services:
       - intranet
     volumes:
       - ./config/oathkeeper:/etc/config/oathkeeper
+
+networks:
+  intranet:
